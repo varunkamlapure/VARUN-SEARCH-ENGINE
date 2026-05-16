@@ -217,6 +217,38 @@ body{font-family:Arial,sans-serif;background:#fff;color:#111827;text-align:cente
 .badge-wiki{background:#3366cc;}
 .badge-archive{background:#b5451b;}
 .badge-unsplash{background:#111111;}
+
+/* ===== AI BLUE LINKS (Google Style) ===== */
+.ai-link-card {
+  padding: 0 0 20px 0;
+  border: none;
+  background: transparent;
+}
+.ai-link-card h3 {
+  margin: 2px 0 4px 0;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+.ai-link-card h3 a {
+  color: #1a0dab;
+  text-decoration: none;
+  font-weight: 400;
+}
+.ai-link-card h3 a:hover { text-decoration: underline; }
+.ai-link-card .card-snip { font-size: 14px; color: #4d5156; line-height: 1.58; margin: 0; }
+.ai-links-loading {
+  display: flex; align-items: center; gap: 10px;
+  color: #6b7280; font-size: 14px; padding: 16px 0;
+}
+.ai-links-spinner {
+  width: 18px; height: 18px;
+  border: 2.5px solid #e5e7eb;
+  border-top: 2.5px solid #2563eb;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
 .img-item{
   display:flex;flex-direction:column;align-items:stretch;
   border-radius:10px;overflow:hidden;
@@ -743,6 +775,16 @@ body.search-active #auth-dropdown {
 
   <div style="border-top:1px solid #e5e7eb;margin:4px 0"></div>
 
+  <div style="border-top:1px solid #e5e7eb;margin:4px 0"></div>
+
+  <!-- Profile Settings -->
+  <div style="padding:4px 0 0 0">
+    <button onclick="openProfileSettings()" style="background:none;border:none;padding:10px 16px;font-size:13px;color:#3c4043;cursor:pointer;text-align:left;width:100%;display:flex;align-items:center;gap:10px;transition:background 0.15s;border-radius:0" onmouseover="this.style.background='#f1f3f4'" onmouseout="this.style.background='none'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" fill="#5f6368"/></svg>
+      <span>Profile Settings</span>
+    </button>
+  </div>
+
   <!-- Sign Out row -->
   <div style="display:flex;flex-direction:column;padding:4px 0 6px 0">
     <button id="auth-signout-btn" onclick="signOutUser()" style="background:none;border:none;padding:10px 16px;font-size:13px;color:#3c4043;cursor:pointer;text-align:left;width:100%;display:flex;align-items:center;gap:10px;transition:background 0.15s;border-radius:0" onmouseover="this.style.background='#f1f3f4'" onmouseout="this.style.background='none'">
@@ -765,6 +807,74 @@ body.search-active #auth-dropdown {
     <div class="auth-toggle" id="auth-toggle-text">
       Don't have an account? <span onclick="switchAuthMode()">Sign Up</span>
     </div>
+  </div>
+</div>
+
+<!-- ===== PROFILE SETTINGS MODAL ===== -->
+<div id="profile-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;align-items:center;justify-content:center">
+  <div id="profile-modal" style="background:#fff;border-radius:16px;padding:32px 28px 24px;width:100%;max-width:440px;position:relative;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.18)">
+    <button onclick="closeProfileSettings()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#6b7280;line-height:1">✕</button>
+    <h2 style="margin:0 0 4px 0;font-size:20px;font-weight:700;color:#111">Profile Settings</h2>
+    <p style="margin:0 0 24px 0;font-size:13px;color:#6b7280">Manage your VarunSearch profile</p>
+
+    <!-- Profile Photo -->
+    <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:24px">
+      <div id="profile-photo-preview" style="width:88px;height:88px;border-radius:50%;background:#e8f0fe;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:700;color:#1a73e8;overflow:hidden;border:3px solid #e5e7eb;cursor:pointer;position:relative" onclick="document.getElementById('profile-photo-input').click()">
+        <span id="profile-photo-initials"></span>
+        <img id="profile-photo-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover">
+        <div style="position:absolute;bottom:0;width:100%;background:rgba(0,0,0,0.45);color:#fff;font-size:10px;text-align:center;padding:4px 0;border-radius:0 0 50px 50px">Edit</div>
+      </div>
+      <input type="file" id="profile-photo-input" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)">
+      <span style="font-size:12px;color:#9ca3af;margin-top:8px">Click to change photo</span>
+    </div>
+
+    <!-- Fields -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div>
+        <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Name</label>
+        <input id="pf-name" type="text" placeholder="Your full name" maxlength="60"
+          style="width:100%;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:10px;font-size:14px;outline:none;transition:border 0.2s"
+          onfocus="this.style.borderColor='#1a73e8'" onblur="this.style.borderColor='#d1d5db'">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Username</label>
+        <div style="position:relative">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:14px">@</span>
+          <input id="pf-username" type="text" placeholder="username" maxlength="30"
+            style="width:100%;padding:10px 14px 10px 28px;border:1.5px solid #d1d5db;border-radius:10px;font-size:14px;outline:none;transition:border 0.2s"
+            onfocus="this.style.borderColor='#1a73e8'" onblur="this.style.borderColor='#d1d5db'"
+            oninput="this.value=this.value.replace(/[^a-zA-Z0-9_.]/g,'').toLowerCase()">
+        </div>
+        <span style="font-size:11px;color:#9ca3af">Letters, numbers, _ and . only</span>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px">Bio</label>
+        <textarea id="pf-bio" placeholder="Tell something about yourself..." maxlength="150" rows="3"
+          style="width:100%;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:10px;font-size:14px;outline:none;resize:none;transition:border 0.2s;font-family:inherit"
+          onfocus="this.style.borderColor='#1a73e8'" onblur="this.style.borderColor='#d1d5db'"></textarea>
+        <span id="pf-bio-count" style="font-size:11px;color:#9ca3af">0/150</span>
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px">
+          Date of Birth <span style="font-weight:400;color:#9ca3af">(optional · hidden)</span>
+        </label>
+        <input id="pf-dob" type="date"
+          style="width:100%;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:10px;font-size:14px;outline:none;transition:border 0.2s;color:#374151"
+          onfocus="this.style.borderColor='#1a73e8'" onblur="this.style.borderColor='#d1d5db'">
+        <span style="font-size:11px;color:#9ca3af">Not shown publicly</span>
+      </div>
+    </div>
+
+    <!-- Error / Success -->
+    <div id="pf-error" style="display:none;margin-top:14px;padding:10px 14px;background:#fef2f2;border-radius:8px;color:#dc2626;font-size:13px"></div>
+    <div id="pf-success" style="display:none;margin-top:14px;padding:10px 14px;background:#f0fdf4;border-radius:8px;color:#16a34a;font-size:13px">✓ Profile saved successfully!</div>
+
+    <!-- Save button -->
+    <button id="pf-save-btn" onclick="saveProfileSettings()"
+      style="width:100%;margin-top:20px;padding:12px;background:#1a73e8;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:background 0.2s"
+      onmouseover="this.style.background='#1557b0'" onmouseout="this.style.background='#1a73e8'">
+      Save Changes
+    </button>
   </div>
 </div>
 
@@ -798,36 +908,24 @@ const results = document.getElementById("results");
 const sugBox = document.getElementById("suggestions");
 const hero = document.getElementById("hero");
 
-// ===== UNSPLASH CONFIG =====("keypress", e => { if(e.key === "Enter") searchAll(); });
+// ===== UNSPLASH CONFIG =====
+box.addEventListener("keypress", e => { if(e.key === "Enter") { sugBox.style.display = "none"; searchAll(); } });
+box.addEventListener("keydown", e => { if(e.key === "Enter") { sugBox.style.display = "none"; searchAll(); } });
+
+// Search button click
+const searchBtn = document.getElementById("searchBtn");
+if(searchBtn) searchBtn.addEventListener("click", () => { sugBox.style.display = "none"; searchAll(); });
 
 box.addEventListener("input", async () => {
   let q = box.value.trim();
   if(q.length < 2){ sugBox.style.display = "none"; return; }
   if(isValidUrl(q)){ sugBox.style.display = "none"; return; }
   try {
-    const [wikiResp, arxivResp] = await Promise.all([
-      fetch(`https://en.wikipedia.org/w/api.php?action=opensearch&format=json&origin=*&search=${encodeURIComponent(q)}&limit=6`).then(r=>r.json()).catch(()=>null),
-      fetch(`https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(q)}&start=0&max_results=4`).then(r=>r.text()).catch(()=>null)
-    ]);
-    const wikiSugs = wikiResp ? wikiResp[1].slice(0,6) : [];
-    let arxivSugs = [];
-    if (arxivResp) {
-      try {
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(arxivResp, "application/xml");
-        xml.querySelectorAll("entry").forEach(entry => {
-          const title = entry.querySelector("title")?.textContent?.trim();
-          if (title && title.toLowerCase() !== "error") arxivSugs.push(title);
-        });
-      } catch(e) {}
-    }
+    const wikiResp = await fetch(`https://en.wikipedia.org/w/api.php?action=opensearch&format=json&origin=*&search=${encodeURIComponent(q)}&limit=8`).then(r=>r.json()).catch(()=>null);
+    const wikiSugs = wikiResp ? wikiResp[1].slice(0,8) : [];
     sugBox.innerHTML = "";
     wikiSugs.forEach(s => {
       sugBox.innerHTML += `<div class="sug" onclick="useSuggestion(this.dataset.val)" data-val="${s.replace(/"/g,'&quot;')}">${s}</div>`;
-    });
-    arxivSugs.slice(0,4).forEach(s => {
-      const short = s.length > 75 ? s.slice(0,75)+"..." : s;
-      sugBox.innerHTML += `<div class="sug" onclick="useSuggestion(this.dataset.val)" data-val="${s.replace(/"/g,'&quot;')}" style="font-size:13px;color:#374151">${short}</div>`;
     });
     if (!sugBox.innerHTML) { sugBox.style.display = "none"; return; }
     const rect = box.getBoundingClientRect();
@@ -969,6 +1067,167 @@ async function fetchMixedImages(query) {
   return images.slice(0, 8);
 }
 
+// ===== IMAGE ROW COMPLETENESS CHECK =====
+// Ek row mein 4 items hote hain. Agar koi image fail ho toh puri row hide karo.
+function handleImgError(imgEl) {
+  const item = imgEl.closest('.img-item');
+  item.dataset.status = 'error';
+  checkRowCompleteness(item);
+}
+
+function handleImgLoad(imgEl) {
+  const item = imgEl.closest('.img-item');
+  item.dataset.status = 'loaded';
+  checkRowCompleteness(item);
+}
+
+function checkRowCompleteness(changedItem) {
+  const grid = changedItem.closest('.imggrid');
+  if (!grid) return;
+
+  // Get column count from CSS grid
+  const cols = getComputedStyle(grid).gridTemplateColumns.split(' ').length || 4;
+
+  const allItems = [...grid.querySelectorAll('.img-item')];
+  const total = allItems.length;
+
+  // Check if ALL items across the entire grid have settled
+  const allGridSettled = allItems.every(el => el.dataset.status === 'loaded' || el.dataset.status === 'error');
+
+  // Group items into rows of `cols`
+  for (let rowStart = 0; rowStart < total; rowStart += cols) {
+    const rowItems = allItems.slice(rowStart, rowStart + cols);
+
+    // Only act if all items in this row have settled (loaded or error)
+    const allSettled = rowItems.every(el => el.dataset.status === 'loaded' || el.dataset.status === 'error');
+    if (!allSettled) continue;
+
+    // Rule 1: Agar row mein koi image error hai toh poori row hide karo
+    const hasError = rowItems.some(el => el.dataset.status === 'error');
+
+    // Rule 2: Agar yeh last/incomplete row hai (4 se kam items) toh hide karo
+    const isIncompleteRow = rowItems.length < cols;
+
+    if (hasError || (isIncompleteRow && allGridSettled)) {
+      rowItems.forEach(el => el.classList.add('img-hidden'));
+    }
+  }
+}
+
+// ===== GROQ AI BLUE LINKS =====
+const GROQ_API_KEY = "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";
+
+async function fetchGroqBlueLinks(query, page = 1) {
+  const count = page === 1 ? "6" : "7";
+  const pageLabel = page === 1 ? "first" : "second";
+  const excludedSites = "wikipedia.org, dictionaryapi.dev, nytimes.com, youtube.com, archive.org, commons.wikimedia.org, unsplash.com, arxiv.org";
+
+  const prompt = `You are a search engine assistant. For the search query: "${query}"
+
+Generate exactly ${count} high-quality web search results for the ${pageLabel} page.
+${page === 2 ? "These must be DIFFERENT websites from typical first-page results. Use more diverse, lesser-known but authoritative sources." : ""}
+
+STRICT RULES:
+- Do NOT include any results from these domains: ${excludedSites}
+- Only use real, working websites
+- No arxiv.org, no Wikipedia, no NYT, no YouTube, no archive.org
+- Return ONLY a valid JSON array. No explanation. No markdown. No backticks. Just raw JSON.
+
+Each object must have:
+- "title": the webpage title (clear and descriptive)
+- "url": a real full URL starting with https://
+- "domain": just the domain (e.g. "britannica.com")
+- "description": 1-2 sentences describing what the page contains
+
+Good sources to use: britannica.com, khanacademy.org, medium.com, healthline.com, webmd.com, nasa.gov, nationalgeographic.com, bbc.com, reuters.com, techcrunch.com, stackoverflow.com, geeksforgeeks.org, investopedia.com, sciencedirect.com, mayoclinic.org, history.com, etc. Pick the most relevant ones for the query.
+
+Now generate ${count} results for: ${query}`;
+
+  const makeRequest = async (model, extraParams = {}) => {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${GROQ_API_KEY}`
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: "user", content: prompt }],
+        temperature: page === 1 ? 0.5 : 1,
+        max_tokens: 2048,
+        top_p: 1,
+        stream: false,
+        ...extraParams
+      })
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error(`Groq API error (${model}):`, res.status, errText);
+      throw new Error("Groq API error: " + res.status);
+    }
+    return res.json();
+  };
+
+  const parseLinks = (text) => {
+    console.log("Groq raw response:", text);
+    // Try to find JSON array anywhere in response
+    const clean = text.replace(/```json|```/gi, "").trim();
+    const start = clean.indexOf("[");
+    const end = clean.lastIndexOf("]");
+    if (start === -1 || end === -1) { console.error("No JSON array found"); return null; }
+    try {
+      const parsed = JSON.parse(clean.slice(start, end + 1));
+      const excluded = ["wikipedia.org","dictionaryapi","nytimes.com","youtube.com","archive.org","wikimedia.org","unsplash.com","arxiv.org"];
+      return parsed.filter(r => !excluded.some(ex => (r.url||"").includes(ex)||(r.domain||"").includes(ex)));
+    } catch(e) { console.error("JSON parse error:", e); return null; }
+  };
+
+  // Try primary model
+  try {
+    const model = page === 1 ? "compound-beta" : "openai/gpt-oss-20b";
+    const extraParams = page === 2 ? { reasoning_effort: "medium" } : {};
+    const data = await makeRequest(model, extraParams);
+    const text = data.choices?.[0]?.message?.content || "";
+    const links = parseLinks(text);
+    if (links && links.length > 0) return links;
+    throw new Error("Empty or unparseable response");
+  } catch(e) {
+    console.warn("Primary model failed, trying fallback:", e.message);
+    // Fallback to llama
+    try {
+      const data = await makeRequest("llama-3.3-70b-versatile");
+      const text = data.choices?.[0]?.message?.content || "";
+      const links = parseLinks(text);
+      return links || [];
+    } catch(e2) {
+      console.error("Fallback also failed:", e2.message);
+      return [];
+    }
+  }
+}
+
+function renderBlueLinksHTML(links) {
+  if (!links || links.length === 0) return "";
+  let html = "";
+  links.forEach((link, idx) => {
+    const safeDomain = (link.domain || "").replace(/</g,"&lt;");
+    const safeTitle = (link.title || "").replace(/</g,"&lt;");
+    const safeDesc = (link.description || "").replace(/</g,"&lt;");
+    const safeUrl = (link.url || "#").replace(/"/g,"%22");
+    const favicon = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(link.domain || "example.com")}&sz=32`;
+    html += `<div class="ai-link-card">
+      <div class="card-src">
+        <div class="card-fav"><img src="${favicon}" onerror="this.parentElement.innerHTML='🌐'" alt=""></div>
+        <span class="card-domain">${safeDomain}</span>
+      </div>
+      <h3><a href="${safeUrl}" target="_blank" rel="noopener">${safeTitle}</a></h3>
+      <p class="card-snip">${safeDesc}</p>
+    </div>
+    <hr style="border:none;border-top:1px solid #ebebeb;margin:0 0 16px 0;">`;
+  });
+  return html;
+}
+
 async function searchAll(){
   let raw = box.value.trim();
   if(!raw){ results.innerHTML = (_t && _t.searchingText) ? "..." : "Type something"; return; }
@@ -1068,27 +1327,17 @@ async function wikiAndMore(query, prepend){
       }
       html += `<div class="img-item">
         <img src="${img.src}" title="${safeTitle}" loading="lazy"
-             onerror="this.closest('.img-item').classList.add('img-hidden')"
+             onerror="handleImgError(this)"
+             onload="handleImgLoad(this)"
              onclick="openViewer('${safeSrc}')">
         ${captionHTML}
       </div>`;
     });
     html += `</div></div>`;
-    // Fix last-row gap after hidden images settle
-    setTimeout(() => {
-      const grids = document.querySelectorAll('.imggrid');
-      grids.forEach(grid => {
-        const cols = Math.round(grid.offsetWidth / (grid.querySelector('.img-item')?.offsetWidth || 1));
-        const visible = [...grid.querySelectorAll('.img-item:not(.img-hidden)')];
-        const rem = visible.length % cols;
-        if (rem !== 0) {
-          const lastItems = visible.slice(-rem);
-          const span = Math.floor(cols / rem);
-          lastItems.forEach(el => { el.style.gridColumn = `span ${span}`; });
-        }
-      });
-    }, 800);
   }
+
+  // ===== AI BLUE LINKS PLACEHOLDER (Page 1) =====
+  html += `<div id="ai-blue-links-p1"><div class="ai-links-loading"><div class="ai-links-spinner"></div>Finding top results...</div></div>`;
 
   if(wiki?.extract){
     const wikiTitle = wiki.title || query;
@@ -1198,6 +1447,17 @@ async function wikiAndMore(query, prepend){
 
   // Store current query for page 2
   window._lastSearchQuery = box.value.trim();
+
+  // ===== ASYNC: Load AI blue links for page 1 =====
+  fetchGroqBlueLinks(query, 1).then(links => {
+    const slot = document.getElementById("ai-blue-links-p1");
+    if (!slot) return;
+    if (!links || links.length === 0) { slot.innerHTML = ""; return; }
+    slot.innerHTML = renderBlueLinksHTML(links);
+  }).catch(() => {
+    const slot = document.getElementById("ai-blue-links-p1");
+    if (slot) slot.innerHTML = "";
+  });
 }
 
 // ===== PAGE 2 SYSTEM =====
@@ -1236,7 +1496,7 @@ async function renderPage2(query) {
   // Show slots immediately, no nav bar
   results.innerHTML = `
     ${matchedVS ? `<div id="p2-vs-knowledge-slot"></div>` : ""}
-    <div id="p2-arxiv-slot"></div>
+    <div id="p2-ai-links-slot"><div class="ai-links-loading"><div class="ai-links-spinner"></div>Finding more results...</div></div>
     <div id="p2-archive-video-slot"></div>
     <div style="text-align:left;margin:20px 0">
       <button onclick="goToPage1()" style="background:none;border:none;font-family:'Courier New',monospace;font-size:17px;color:#2563eb;cursor:pointer;letter-spacing:2px;text-decoration:underline;padding:10px 0">
@@ -1268,42 +1528,27 @@ async function renderPage2(query) {
     }
   }
 
-  // Fetch all 3 in parallel, render each as it arrives
-  const arxivPromise = fetch(`https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(cleanQ)}&start=0&max_results=5`)
-    .then(r => r.text()).catch(() => null);
+  // Fetch page 2 data in parallel
   const archiveVideoPromise = fetch(`https://archive.org/advancedsearch.php?q=${encodeURIComponent(cleanQ)}+AND+mediatype:(movies)&rows=6&output=json&fl[]=identifier,title,description`)
     .then(r => r.json()).catch(() => null);
 
-  // arXiv
-  arxivPromise.then(arxivData => {
-    const slot = document.getElementById("p2-arxiv-slot");
+  // ===== AI BLUE LINKS PAGE 2 =====
+  fetchGroqBlueLinks(cleanQ, 2).then(links => {
+    const slot = document.getElementById("p2-ai-links-slot");
     if (!slot) return;
-    let items = "";
-    if (arxivData) {
-      try {
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(arxivData, "application/xml");
-        const entries = xml.querySelectorAll("entry");
-        entries.forEach(entry => {
-          const title = entry.querySelector("title")?.textContent?.trim() || "Untitled";
-          const summary = entry.querySelector("summary")?.textContent?.trim() || "";
-          const link = entry.querySelector("link[title='pdf']")?.getAttribute("href") ||
-                       entry.querySelector("link")?.getAttribute("href") || "#";
-          const published = entry.querySelector("published")?.textContent?.slice(0,10) || "";
-          const authors = [...entry.querySelectorAll("author name")].map(a => a.textContent).slice(0,3).join(", ");
-          items += `<div style="border-left:3px solid #b91c1c;padding:10px 14px;margin:10px 0;background:#fff7f7;border-radius:0 8px 8px 0">
-            <a href="${link}" target="_blank" style="font-weight:bold;color:#b91c1c;font-size:14px">${title}</a>
-            <div style="font-size:12px;color:#6b7280;margin:3px 0">${authors}${published ? ` · ${published}` : ''}</div>
-            <div style="font-size:13px;color:#374151;margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${summary}</div>
-          </div>`;
-        });
-      } catch(e) {}
-    }
-    if (items) {
-      slot.innerHTML = `<div class="card" id="arxiv-card">
-        <h3>🔬 arXiv Research Papers</h3>${items}</div>`;
-    }
-    // if no items, slot stays empty (card hidden)
+    if (!links || links.length === 0) { slot.innerHTML = ""; return; }
+    let html = `<div class="card">
+      <div class="card-src">
+        <div class="card-fav">🔍</div>
+        <span class="card-domain">AI Search Results · Page 2</span>
+      </div>
+      <h3 style="font-size:17px;color:#1a0dab;margin-bottom:14px">More Results</h3>`;
+    html += renderBlueLinksHTML(links);
+    html += `</div>`;
+    slot.innerHTML = html;
+  }).catch(() => {
+    const slot = document.getElementById("p2-ai-links-slot");
+    if (slot) slot.innerHTML = "";
   });
 
   // Internet Archive Videos
@@ -1706,7 +1951,8 @@ document.addEventListener("DOMContentLoaded", function() {
     signOut,
     onAuthStateChanged,
     GoogleAuthProvider,
-    signInWithPopup
+    signInWithPopup,
+    updateProfile
   } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
   const firebaseConfig = {
@@ -1924,6 +2170,137 @@ document.addEventListener("DOMContentLoaded", function() {
       showAuthError(friendlyError(err.code));
     }
   };
+
+  // ===== PROFILE SETTINGS =====
+  let profilePhotoDataUrl = null;
+
+  window.openProfileSettings = function() {
+    closeAuthDropdown();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    // Load saved extra profile data from localStorage
+    const saved = JSON.parse(localStorage.getItem("vs_profile_" + user.uid) || "{}");
+
+    // Populate fields
+    document.getElementById("pf-name").value = user.displayName || saved.name || "";
+    document.getElementById("pf-username").value = saved.username || "";
+    document.getElementById("pf-bio").value = saved.bio || "";
+    document.getElementById("pf-dob").value = saved.dob || "";
+
+    // Bio counter
+    const bioEl = document.getElementById("pf-bio");
+    const bioCount = document.getElementById("pf-bio-count");
+    bioCount.textContent = bioEl.value.length + "/150";
+    bioEl.oninput = () => bioCount.textContent = bioEl.value.length + "/150";
+
+    // Photo preview
+    profilePhotoDataUrl = null;
+    const photoImg = document.getElementById("profile-photo-img");
+    const photoInitials = document.getElementById("profile-photo-initials");
+    if (saved.photoDataUrl) {
+      photoImg.src = saved.photoDataUrl;
+      photoImg.style.display = "block";
+      photoInitials.style.display = "none";
+    } else if (user.photoURL) {
+      photoImg.src = user.photoURL;
+      photoImg.style.display = "block";
+      photoInitials.style.display = "none";
+    } else {
+      photoImg.style.display = "none";
+      photoInitials.style.display = "block";
+      photoInitials.textContent = getInitials(user);
+    }
+
+    // Hide messages
+    document.getElementById("pf-error").style.display = "none";
+    document.getElementById("pf-success").style.display = "none";
+
+    // Show modal
+    const overlay = document.getElementById("profile-modal-overlay");
+    overlay.style.display = "flex";
+  };
+
+  window.closeProfileSettings = function() {
+    document.getElementById("profile-modal-overlay").style.display = "none";
+    profilePhotoDataUrl = null;
+  };
+
+  window.handlePhotoUpload = function(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      document.getElementById("pf-error").textContent = "Photo must be under 2MB.";
+      document.getElementById("pf-error").style.display = "block";
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      profilePhotoDataUrl = e.target.result;
+      const photoImg = document.getElementById("profile-photo-img");
+      const photoInitials = document.getElementById("profile-photo-initials");
+      photoImg.src = profilePhotoDataUrl;
+      photoImg.style.display = "block";
+      photoInitials.style.display = "none";
+      document.getElementById("pf-error").style.display = "none";
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.saveProfileSettings = async function() {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const name = document.getElementById("pf-name").value.trim();
+    const username = document.getElementById("pf-username").value.trim();
+    const bio = document.getElementById("pf-bio").value.trim();
+    const dob = document.getElementById("pf-dob").value;
+    const errEl = document.getElementById("pf-error");
+    const sucEl = document.getElementById("pf-success");
+    const saveBtn = document.getElementById("pf-save-btn");
+
+    errEl.style.display = "none";
+    sucEl.style.display = "none";
+
+    if (!name) { errEl.textContent = "Name cannot be empty."; errEl.style.display = "block"; return; }
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving...";
+
+    try {
+      // Update Firebase displayName
+      await updateProfile(user, { displayName: name });
+
+      // Save extra fields to localStorage (Firebase free tier has no Firestore needed)
+      const existing = JSON.parse(localStorage.getItem("vs_profile_" + user.uid) || "{}");
+      const profileData = {
+        ...existing,
+        name,
+        username,
+        bio,
+        dob,
+        photoDataUrl: profilePhotoDataUrl || existing.photoDataUrl || null
+      };
+      localStorage.setItem("vs_profile_" + user.uid, JSON.stringify(profileData));
+
+      // Update UI avatar & name
+      setAuthUIForUser({ ...user, displayName: name });
+
+      sucEl.style.display = "block";
+      setTimeout(() => { sucEl.style.display = "none"; }, 3000);
+    } catch(e) {
+      errEl.textContent = "Failed to save: " + (e.message || "Unknown error");
+      errEl.style.display = "block";
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save Changes";
+    }
+  };
+
+  // Close profile modal on overlay click
+  document.getElementById("profile-modal-overlay").addEventListener("click", function(e) {
+    if (e.target === this) window.closeProfileSettings();
+  });
 
   window.signOutUser = async function() {
     closeAuthDropdown();
